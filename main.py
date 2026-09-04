@@ -1,3 +1,20 @@
+# from pipeline import run_pipeline
+#
+# for q in ["revenue", "customers", "usage"]:
+#     result = run_pipeline(q)
+#     print(f"\n--- {q} ---")
+#     print(result["summary"])
+
+
+
+# from pipeline import run_pipeline
+#
+# result = run_pipeline("revenue")
+# print(result["summary"])
+# print(result["verification"])
+
+
+
 # from aggregation import get_new_customers_by_month, get_revenue_by_region, get_usage_by_plan
 # from formatting import format_usage_data
 # from LLM import generate_summary

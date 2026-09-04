@@ -1,7 +1,7 @@
 def format_revenue_data(data: list[dict]) -> str:
     lines = []
     for row in data:
-        lines.append(f"{row['region']}: {row['total_revenue']} лв.")
+        lines.append(f"{row['region']}: {row['total_revenue']} €.")
     return "\n".join(lines)
 
 
