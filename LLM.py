@@ -6,7 +6,7 @@ load_dotenv()
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
-MODEL = "minimax/minimax-m3:free"
+MODEL = "google/gemma-4-31b-it:free"
 
 SYSTEM_PROMPT = """Ти си асистент, който пише кратки бизнес резюмета на телеком данни.
 Правила, които следваш стриктно:
