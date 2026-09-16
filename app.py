@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 from pipeline import run_pipeline
+from rag import build_vector_index, retrieve_relevant_chunks
+from LLM import generate_rag_answer
 
 
 def show_result(result, label_field):
@@ -42,3 +44,24 @@ if st.sidebar.button("Генерирай"):
     with st.spinner("Генерирам резюме..."):
         result = run_pipeline(pipeline_key)
     show_result(result, label_field)
+
+st.divider()
+st.subheader("Свободен въпрос (RAG)")
+
+if st.button("Обнови RAG индекса"):
+    with st.spinner("Индексирам данните в Qdrant..."):
+        build_vector_index()
+    st.success("Индексът е обновен.")
+
+question = st.text_input("Задай въпрос за данните:")
+
+if st.button("Питай") and question:
+    with st.spinner("Търся релевантни данни и генерирам отговор..."):
+        chunks = retrieve_relevant_chunks(question, top_k=3)
+        answer = generate_rag_answer(question, chunks)
+
+    st.write("**Отговор:**", answer)
+
+    with st.expander("Кои данни бяха използвани?"):
+        for chunk in chunks:
+            st.write("-", chunk["text"])
