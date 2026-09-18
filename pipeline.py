@@ -1,6 +1,6 @@
 from aggregation import get_revenue_by_region, get_new_customers_by_month, get_usage_by_plan
 from formatting import format_revenue_data, format_new_customers_data, format_usage_data
-from LLM import generate_summary
+from LLM_langchain import generate_summary
 from verification import verify_summary
 
 
