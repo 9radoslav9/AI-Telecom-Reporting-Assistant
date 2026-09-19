@@ -46,3 +46,67 @@ chain = prompt | model | StrOutputParser()
 
 def generate_summary(formatted_data: str) -> str:
     return chain.invoke({"formatted_data": formatted_data})
+
+
+
+SYSTEM_PROMPT_RAG = """Ти си асистент, който отговаря на въпроси за телеком бизнес данни,
+използвайки САМО контекста, предоставен ти по-долу.
+
+Правила:
+1. Отговаряй единствено на база подадения контекст. Никога не добавяй
+   информация, която не е изрично налична в него.
+2. Ако контекстът не съдържа отговор на въпроса, кажи ясно: "Нямам
+   достатъчно данни, за да отговоря на този въпрос." Не гадай и не измисляй.
+3. Отговаряй на български, кратко (2-3 изречения), без markdown форматиране.
+4. Валутата е винаги евро, изписвана със символа €.
+5. Цитирай конкретните числа от контекста точно както са подадени.
+"""
+
+rag_prompt = ChatPromptTemplate.from_messages([
+    ("system", SYSTEM_PROMPT_RAG),
+    ("human", "Контекст:\n{context}\n\nВъпрос: {question}"),
+])
+
+rag_chain = rag_prompt | model | StrOutputParser()
+
+
+def generate_rag_answer_langchain(question: str, context_chunks: list[dict]) -> str:
+    context_text = "\n".join(chunk["text"] for chunk in context_chunks)
+    return rag_chain.invoke({"context": context_text, "question": question})
+
+
+
+CLASSIFY_SYSTEM_PROMPT = """Ти класифицираш въпроси за телеком бизнес данни в точно една от четири категории.
+
+Категории:
+- revenue: въпроси за приходи, пари, евро/€, кой регион печели повече или по-малко
+- customers: въпроси за брой нови клиенти, регистрации, конкретни месеци на регистрация
+- usage: въпроси за GB данни, минути разговори, SMS, или плановете Basic/Standard/Premium
+- general: всичко останало — твърде общи, двусмислени, извън тези три теми,
+  или изискващи сравнение/изчисление, което не е директно налично
+
+Отговори ЕДИНСТВЕНО с една от четирите думи: revenue, customers, usage, general.
+Без обяснение, без пунктуация, без нищо друго.
+Ако не си сигурен на 100%, отговори с general — по-безопасно е да отидеш към
+отворения RAG отговор, отколкото погрешно да насочиш към агрегация, която не
+пасва на реалния въпрос.
+"""
+
+classify_prompt = ChatPromptTemplate.from_messages([
+    ("system", CLASSIFY_SYSTEM_PROMPT),
+    ("human", "{question}"),
+])
+
+classify_chain = classify_prompt | model | StrOutputParser()
+
+VALID_ROUTES = {"revenue", "customers", "usage", "general"}
+
+
+def classify_question(question: str) -> str:
+    raw_result = classify_chain.invoke({"question": question}).strip().lower()
+
+    for route in VALID_ROUTES:
+        if route in raw_result:
+            return route
+
+    return "general"

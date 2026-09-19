@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
 from pipeline import run_pipeline
-from rag import build_vector_index, retrieve_relevant_chunks
-from LLM import generate_rag_answer
+from rag import build_vector_index
+from agent import run_agent
 
 
 def show_result(result, label_field):
@@ -46,22 +46,27 @@ if st.sidebar.button("Генерирай"):
     show_result(result, label_field)
 
 st.divider()
-st.subheader("Свободен въпрос (RAG)")
+st.subheader("Свободен въпрос")
 
 if st.button("Обнови RAG индекса"):
     with st.spinner("Индексирам данните в Qdrant..."):
         build_vector_index()
     st.success("Индексът е обновен.")
 
-question = st.text_input("Задай въпрос за данните:")
+question = st.text_input("Задай въпрос за данните (свободен текст):")
 
 if st.button("Питай") and question:
-    with st.spinner("Търся релевантни данни и генерирам отговор..."):
-        chunks = retrieve_relevant_chunks(question, top_k=3)
-        answer = generate_rag_answer(question, chunks)
+    with st.spinner("Анализирам въпроса и генерирам отговор..."):
+        result = run_agent(question)
 
-    st.write("**Отговор:**", answer)
+    route = result["route"]
+    label_map = {"revenue": "region", "customers": "month", "usage": "plan_name"}
 
-    with st.expander("Кои данни бяха използвани?"):
-        for chunk in chunks:
-            st.write("-", chunk["text"])
+    if route == "general":
+        st.write("**Отговор:**", result["rag_answer"])
+        with st.expander("Кои данни бяха използвани?"):
+            for chunk in result["rag_chunks"]:
+                st.write("-", chunk["text"])
+    else:
+        st.caption(f"Разпознат като фиксиран въпрос: {route}")
+        show_result(result["pipeline_result"], label_map[route])
