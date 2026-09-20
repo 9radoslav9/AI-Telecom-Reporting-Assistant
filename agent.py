@@ -26,7 +26,7 @@ def fixed_node(state: AgentState) -> dict:
 
 
 def rag_node(state: AgentState) -> dict:
-    chunks = retrieve_relevant_chunks(state["question"], top_k=3)
+    chunks = retrieve_relevant_chunks(state["question"], top_k=5)
     answer = generate_rag_answer_langchain(state["question"], chunks)
     return {"rag_chunks": chunks, "rag_answer": answer}
 
