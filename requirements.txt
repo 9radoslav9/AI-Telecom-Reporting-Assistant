@@ -2,4 +2,9 @@ streamlit
 requests
 python-dotenv
 supabase
+faker
 pandas
+qdrant-client
+langchain-openrouter==0.2.8
+langchain-core==1.6.3
+langgraph
